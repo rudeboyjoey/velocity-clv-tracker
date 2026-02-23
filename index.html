@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velocity + CLV Tracker (Demo)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --warn: #f59e0b;
+      --line: #334155;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 { margin-top: 0; }
+    .sub { color: var(--muted); margin-top: -8px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+    }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 6px;
+    }
+    .alert {
+      border-left: 4px solid var(--warn);
+      background: rgba(245, 158, 11, 0.1);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+    .good { color: var(--good); font-weight: 600; }
+    .bad { color: var(--bad); font-weight: 600; }
+    input, select, button {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    button {
+      background: #1d4ed8;
+      border-color: #1e40af;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Velocity + CLV Tracker (Mock Demo)</h1>
+    <p class="sub">No Betfair API. Simulated soccer prices, velocity alerts, and manual CLV entry in browser memory.</p>
+
+    <div class="card">
+      <span class="pill" id="simTimePill">Sim time: 00:00</span>
+      <span class="pill">1 sim minute = 2 real seconds</span>
+      <span class="pill">Price update every 2 sec</span>
+      <div class="small">Velocity trigger: <strong>3%+ drop over 5 simulated minutes</strong>.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Mock Soccer Markets</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Current Back</th>
+              <th>5m Drop</th>
+            </tr>
+          </thead>
+          <tbody id="marketBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Manual Bet Entry (for CLV)</h3>
+        <label for="marketSelect">Market</label>
+        <select id="marketSelect"></select>
+
+        <label for="takenOdds">Bookmaker odds taken</label>
+        <input id="takenOdds" type="number" step="0.01" min="1.01" placeholder="e.g. 2.35" />
+
+        <label for="stake">Stake (optional)</label>
+        <input id="stake" type="number" step="0.01" min="0" placeholder="e.g. 50" />
+
+        <button id="saveBet">Save Bet Snapshot</button>
+        <div class="small">CLV = ((Taken Odds / Sim Closing Odds) - 1) × 100.</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Velocity Alerts</h3>
+        <div id="alertBox"></div>
+      </div>
+
+      <div class="card">
+        <h3>Saved Bets + CLV</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Market</th>
+              <th>Taken</th>
+              <th>Sim Close</th>
+              <th>CLV %</th>
+            </tr>
+          </thead>
+          <tbody id="betsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SIM_MINUTE_MS = 2000;
+    const DROP_WINDOW_MINUTES = 5;
+    const DROP_THRESHOLD = 3;
+
+    const markets = [
+      { id: 'm1', name: 'Man City vs Arsenal - Home', price: 2.12 },
+      { id: 'm2', name: 'Inter vs Milan - Over 2.5', price: 1.94 },
+      { id: 'm3', name: 'PSG vs Marseille - Away', price: 3.2 }
+    ].map((m) => ({
+      ...m,
+      history: [{ simMinute: 0, price: m.price }],
+      lastAlertedAt: null
+    }));
+
+    const alerts = [];
+    const bets = [];
+    let simMinute = 0;
+
+    const marketBody = document.getElementById('marketBody');
+    const alertBox = document.getElementById('alertBox');
+    const betsBody = document.getElementById('betsBody');
+    const simTimePill = document.getElementById('simTimePill');
+    const marketSelect = document.getElementById('marketSelect');
+
+    function pad2(n) {
+      return n.toString().padStart(2, '0');
+    }
+
+    function formatSimTime(minute) {
+      const hh = Math.floor(minute / 60);
+      const mm = minute % 60;
+      return `${pad2(hh)}:${pad2(mm)}`;
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function randomDrift() {
+      return (Math.random() * 0.03) - 0.015;
+    }
+
+    function randomShock() {
+      return Math.random() < 0.2 ? -(0.025 + Math.random() * 0.03) : 0;
+    }
+
+    function currentPrice(id) {
+      const m = markets.find((x) => x.id === id);
+      return m ? m.price : null;
+    }
+
+    function getDropStats(market) {
+      const startMinute = simMinute - DROP_WINDOW_MINUTES;
+      const windowStart = [...market.history].reverse().find((p) => p.simMinute <= startMinute);
+      if (!windowStart) return null;
+
+      const dropPct = ((windowStart.price - market.price) / windowStart.price) * 100;
+      return {
+        from: windowStart.price,
+        to: market.price,
+        dropPct
+      };
+    }
+
+    function maybeAlert(market, stats) {
+      if (!stats || stats.dropPct < DROP_THRESHOLD) return;
+      if (market.lastAlertedAt !== null && simMinute - market.lastAlertedAt < DROP_WINDOW_MINUTES) return;
+
+      market.lastAlertedAt = simMinute;
+      const message = `${market.name}: ${stats.dropPct.toFixed(2)}% drop in 5m (from ${stats.from.toFixed(2)} to ${stats.to.toFixed(2)}).`;
+      alerts.unshift({ simMinute, message });
+      if (alerts.length > 12) alerts.pop();
+
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert(`Velocity alert\n${message}`);
+      }
+    }
+
+    function tick() {
+      simMinute += 1;
+      simTimePill.textContent = `Sim time: ${formatSimTime(simMinute)}`;
+
+      markets.forEach((market) => {
+        const change = randomDrift() + randomShock();
+        market.price = clamp(market.price * (1 + change), 1.01, 10);
+        market.history.push({ simMinute, price: market.price });
+        if (market.history.length > 120) market.history.shift();
+
+        const stats = getDropStats(market);
+        maybeAlert(market, stats);
+      });
+
+      render();
+    }
+
+    function renderMarkets() {
+      marketBody.innerHTML = '';
+      markets.forEach((m) => {
+        const stats = getDropStats(m);
+        const tr = document.createElement('tr');
+        const dropText = !stats ? '-' : `${stats.dropPct.toFixed(2)}%`;
+        const dropClass = stats && stats.dropPct >= DROP_THRESHOLD ? 'bad' : '';
+        tr.innerHTML = `
+          <td>${m.name}</td>
+          <td>${m.price.toFixed(2)}</td>
+          <td class="${dropClass}">${dropText}</td>
+        `;
+        marketBody.appendChild(tr);
+      });
+    }
+
+    function renderAlerts() {
+      alertBox.innerHTML = '';
+      if (!alerts.length) {
+        alertBox.innerHTML = '<div class="small">No alerts yet.</div>';
+        return;
+      }
+
+      alerts.forEach((a) => {
+        const div = document.createElement('div');
+        div.className = 'alert';
+        div.textContent = `[${formatSimTime(a.simMinute)}] ${a.message}`;
+        alertBox.appendChild(div);
+      });
+    }
+
+    function renderBets() {
+      betsBody.innerHTML = '';
+      bets.forEach((b) => {
+        const closing = currentPrice(b.marketId);
+        const clvPct = closing ? ((b.takenOdds / closing) - 1) * 100 : 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${formatSimTime(b.simMinute)}</td>
+          <td>${b.marketName}</td>
+          <td>${b.takenOdds.toFixed(2)}</td>
+          <td>${closing ? closing.toFixed(2) : '-'}</td>
+          <td class="${clvPct >= 0 ? 'good' : 'bad'}">${clvPct.toFixed(2)}%</td>
+        `;
+        betsBody.appendChild(tr);
+      });
+
+      if (!bets.length) {
+        betsBody.innerHTML = '<tr><td colspan="5" class="small">No bets saved yet.</td></tr>';
+      }
+    }
+
+    function renderMarketSelect() {
+      marketSelect.innerHTML = '';
+      markets.forEach((m) => {
+        const option = document.createElement('option');
+        option.value = m.id;
+        option.textContent = m.name;
+        marketSelect.appendChild(option);
+      });
+    }
+
+    function render() {
+      renderMarkets();
+      renderAlerts();
+      renderBets();
+    }
+
+    document.getElementById('saveBet').addEventListener('click', () => {
+      const marketId = marketSelect.value;
+      const takenOdds = parseFloat(document.getElementById('takenOdds').value);
+      const stake = parseFloat(document.getElementById('stake').value || '0');
+
+      if (!marketId || Number.isNaN(takenOdds) || takenOdds < 1.01) {
+        window.alert('Enter valid bookmaker odds (>= 1.01).');
+        return;
+      }
+
+      const market = markets.find((m) => m.id === marketId);
+      bets.unshift({
+        simMinute,
+        marketId,
+        marketName: market.name,
+        takenOdds,
+        stake
+      });
+      if (bets.length > 40) bets.pop();
+
+      document.getElementById('takenOdds').value = '';
+      document.getElementById('stake').value = '';
+      renderBets();
+    });
+
+    renderMarketSelect();
+    render();
+    setInterval(tick, SIM_MINUTE_MS);
+  </script>
+</body>
+</html>
