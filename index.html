@@ -6,24 +6,27 @@
   <title>E-commerce Sales + Ad Spend Dashboard</title>
   <style>
     :root {
-      --bg: #0a0a0a;
-      --panel: #141414;
-      --panel-2: #1b1b1b;
-      --line: #333333;
-      --text: #f5f5f5;
-      --muted: #b8b8b8;
-      --accent: #f97316;
-      --accent-soft: #fed7aa;
-      --danger: #fb7185;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d8deea;
+      --text: #111827;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-2: #0f766e;
+      --danger: #b91c1c;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at top, #191919 0%, #080808 55%);
+      background: var(--bg);
     }
-    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
     h1 { margin: 0; }
     .sub { color: var(--muted); margin-top: 8px; }
     .grid {
@@ -37,7 +40,7 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
     }
     .full { grid-column: 1 / -1; }
     h3 { margin-top: 0; margin-bottom: 8px; }
@@ -50,7 +53,7 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       font-size: 14px;
-      background: var(--panel-2);
+      background: #fff;
       color: var(--text);
     }
     textarea {
@@ -61,22 +64,29 @@
     }
     button {
       background: var(--accent);
-      color: #111;
-      font-weight: 700;
+      color: #fff;
+      font-weight: 600;
       cursor: pointer;
-      border-color: #ea580c;
+      border-color: #1d4ed8;
     }
-    button.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    button.secondary {
+      background: #fff;
+      color: var(--accent);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
     .tiny { font-size: 12px; color: var(--muted); }
     .pills { display: flex; flex-wrap: wrap; gap: 8px; }
     .pill {
-      border: 1px solid #4a4a4a;
+      border: 1px solid var(--line);
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 12px;
-      color: #ffd3b3;
-      background: #1f1f1f;
+      color: var(--muted);
+      background: #fff;
     }
     .metric-grid {
       display: grid;
@@ -88,39 +98,29 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 10px;
-      background: #101010;
+      background: #fafcff;
     }
     .metric .k { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .metric .v { font-size: 20px; font-weight: 700; color: #ffe8d8; }
+    .metric .v { font-size: 20px; font-weight: 700; }
     .chart-wrap {
       height: 390px;
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 10px;
-      background: #0d0d0d;
+      background: #fff;
       margin-top: 10px;
     }
     canvas { width: 100%; height: 100%; }
     .warn {
-      border-left: 4px solid var(--accent);
-      background: rgba(249, 115, 22, 0.12);
-      color: var(--accent-soft);
+      border-left: 4px solid #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
       padding: 10px;
       border-radius: 8px;
       margin-top: 8px;
       font-size: 13px;
     }
-    .error {
-      color: var(--danger);
-      font-size: 12px;
-      white-space: pre-line;
-      background: rgba(251, 113, 133, 0.08);
-      border: 1px solid rgba(251, 113, 133, 0.25);
-      border-radius: 8px;
-      padding: 8px;
-      margin-top: 4px;
-      display: none;
-    }
+    .error { color: var(--danger); font-size: 12px; margin-top: -2px; }
   </style>
 </head>
 <body>
@@ -139,7 +139,7 @@
 
         <div id="salesPasteSection">
           <label for="salesCsv">Sales CSV rows</label>
-          <textarea id="salesCsv" placeholder="date,order_number,platform,item_revenue,shipping_revenue,total_revenue"></textarea>
+          <textarea id="salesCsv" placeholder="date,order_number,platform,item_revenue,shipping_revenue,total_revenue\n2026-03-10,1001,Amazon,87.2,7.8,95"></textarea>
         </div>
 
         <div id="salesGoogleSection" style="display:none;">
@@ -162,7 +162,7 @@
 
         <div id="adPasteSection">
           <label for="adCsv">Ad spend CSV rows</label>
-          <textarea id="adCsv" placeholder="date,platform,channel,ad_spend"></textarea>
+          <textarea id="adCsv" placeholder="date,platform,channel,ad_spend\n2026-03-10,Amazon,Google Ads,42.5"></textarea>
         </div>
 
         <div id="adGoogleSection" style="display:none;">
@@ -189,7 +189,7 @@
           </div>
           <div>
             <label for="platformFilter">Platforms (multi-select)</label>
-            <select id="platformFilter" multiple size="5"></select>
+            <select id="platformFilter" multiple size="4"></select>
           </div>
         </div>
         <div class="row">
@@ -206,20 +206,19 @@
 
         <div class="pills" id="summaryPills"></div>
         <div class="metric-grid">
-          <div class="metric"><div class="k">Total Sales Revenue</div><div class="v" id="mSales">£0.00</div></div>
-          <div class="metric"><div class="k">Total Ad Spend</div><div class="v" id="mSpend">£0.00</div></div>
+          <div class="metric"><div class="k">Total Sales Revenue</div><div class="v" id="mSales">$0.00</div></div>
+          <div class="metric"><div class="k">Total Ad Spend</div><div class="v" id="mSpend">$0.00</div></div>
           <div class="metric"><div class="k">ROAS (Revenue / Spend)</div><div class="v" id="mRoas">0.00x</div></div>
           <div class="metric"><div class="k">Orders</div><div class="v" id="mOrders">0</div></div>
         </div>
 
         <div class="chart-wrap"><canvas id="chart" width="1150" height="370"></canvas></div>
-        <div class="warn">Solid lines = revenue, dashed lines = ad spend, grouped by platform (including Etsy) over the selected period.</div>
+        <div class="warn">The chart overlays revenue by platform and ad spend totals by platform across the selected period.</div>
       </div>
     </div>
   </div>
 
   <script>
-    const KNOWN_PLATFORMS = ['Amazon', 'Shopify', 'eBay', 'Etsy'];
     const sampleSalesCsv = `date,order_number,platform,item_revenue,shipping_revenue,total_revenue
 2026-02-25,10001,Amazon,75,6,81
 2026-02-26,10002,Shopify,125,8,133
@@ -229,10 +228,8 @@
 2026-03-02,10006,Amazon,105,9,114
 2026-03-03,10007,eBay,38,4,42
 2026-03-04,10008,Shopify,142,10,152
-2026-03-05,10013,Etsy,57,4,61
 2026-03-06,10009,Amazon,115,8,123
 2026-03-07,10010,eBay,89,6,95
-2026-03-08,10014,Etsy,72,5,77
 2026-03-09,10011,Shopify,180,12,192
 2026-03-10,10012,Amazon,94,7,101`;
 
@@ -245,16 +242,14 @@
 2026-03-02,Amazon,Google Ads,31
 2026-03-03,eBay,Meta Ads,18
 2026-03-04,Shopify,Google Ads,49
-2026-03-05,Etsy,Pinterest,15
 2026-03-06,Amazon,Meta Ads,33
 2026-03-07,eBay,TikTok Ads,23
-2026-03-08,Etsy,Google Ads,22
 2026-03-09,Shopify,Meta Ads,54
 2026-03-10,Amazon,Google Ads,29`;
 
     const chart = document.getElementById('chart');
     const ctx = chart.getContext('2d');
-    const colors = ['#f97316', '#fb923c', '#f59e0b', '#fdba74', '#ea580c', '#fcd34d'];
+    const colors = ['#2563eb', '#7c3aed', '#0f766e', '#e11d48', '#ea580c', '#0891b2'];
 
     let salesRows = [];
     let adRows = [];
@@ -262,56 +257,17 @@
     document.getElementById('salesCsv').value = sampleSalesCsv;
     document.getElementById('adCsv').value = sampleAdCsv;
 
-    function setError(id, message) {
-      const el = document.getElementById(id);
-      if (!message) {
-        el.style.display = 'none';
-        el.textContent = '';
-        return;
-      }
-      el.style.display = 'block';
-      el.textContent = message;
-    }
-
     function parseCsv(text) {
-      const cleaned = text.trim();
-      if (!cleaned) return { rows: [], headers: [] };
-
-      const lines = cleaned.split('\n').map((line) => line.trim()).filter(Boolean);
-      if (lines.length < 2) return { rows: [], headers: [] };
+      const lines = text.trim().split('\n').map((line) => line.trim()).filter(Boolean);
+      if (lines.length < 2) return [];
       const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-      const rows = lines.slice(1).map((line) => {
+      return lines.slice(1).map((line) => {
         const values = line.split(',').map((v) => v.trim());
         return headers.reduce((obj, key, idx) => {
           obj[key] = values[idx] ?? '';
           return obj;
         }, {});
       });
-      return { rows, headers };
-    }
-
-    function validateHeaders(headers, required) {
-      const missing = required.filter((field) => !headers.includes(field));
-      if (!missing.length) return null;
-      return `Missing required columns: ${missing.join(', ')}.\nFix: check row 1 in your Google Sheet and republish CSV with exact header names.`;
-    }
-
-    function parseDateFlexible(raw) {
-      const value = String(raw || '').trim();
-      if (!value) return null;
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-      const slash = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (slash) {
-        const month = slash[1].padStart(2, '0');
-        const day = slash[2].padStart(2, '0');
-        return `${slash[3]}-${month}-${day}`;
-      }
-
-      const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime())) return null;
-      return parsed.toISOString().slice(0, 10);
     }
 
     async function loadCsvFromSource(typeEl, pasteEl, urlEl) {
@@ -319,64 +275,35 @@
       if (sourceType === 'paste') return parseCsv(document.getElementById(pasteEl).value);
 
       const url = document.getElementById(urlEl).value.trim();
-      if (!url) throw new Error('Google Sheets URL is empty.\nFix: paste a published CSV link ending with output=csv.');
-
-      let res;
-      try {
-        res = await fetch(url);
-      } catch (err) {
-        throw new Error('Could not reach Google Sheets URL.\nFix: check sharing and that the URL is publicly accessible.');
-      }
-
-      if (!res.ok) throw new Error(`Unable to fetch Google Sheet CSV (HTTP ${res.status}).\nFix: File → Share → Publish to web → CSV.`);
+      if (!url) throw new Error('Google Sheets URL is empty.');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Unable to fetch Google Sheet CSV. Ensure the sheet is published.');
       const txt = await res.text();
       return parseCsv(txt);
     }
 
     function normalizeSales(rows) {
-      const badRows = [];
-      const normalized = rows.map((r, idx) => {
-        const date = parseDateFlexible(r.date);
-        const total = Number(r.total_revenue || 0);
-        if (!date || !r.platform || Number.isNaN(total)) {
-          badRows.push(idx + 2);
-          return null;
-        }
-        return {
-          date,
-          order_number: r.order_number,
-          platform: r.platform,
-          item_revenue: Number(r.item_revenue || 0),
-          shipping_revenue: Number(r.shipping_revenue || 0),
-          total_revenue: total
-        };
-      }).filter(Boolean);
-
-      return { normalized, badRows };
+      return rows.map((r) => ({
+        date: r.date,
+        order_number: r.order_number,
+        platform: r.platform,
+        item_revenue: Number(r.item_revenue || 0),
+        shipping_revenue: Number(r.shipping_revenue || 0),
+        total_revenue: Number(r.total_revenue || 0)
+      })).filter((r) => r.date && r.platform && !Number.isNaN(r.total_revenue));
     }
 
     function normalizeAdSpend(rows) {
-      const badRows = [];
-      const normalized = rows.map((r, idx) => {
-        const date = parseDateFlexible(r.date);
-        const spend = Number(r.ad_spend || 0);
-        if (!date || !r.platform || Number.isNaN(spend)) {
-          badRows.push(idx + 2);
-          return null;
-        }
-        return {
-          date,
-          platform: r.platform,
-          channel: r.channel,
-          ad_spend: spend
-        };
-      }).filter(Boolean);
-
-      return { normalized, badRows };
+      return rows.map((r) => ({
+        date: r.date,
+        platform: r.platform,
+        channel: r.channel,
+        ad_spend: Number(r.ad_spend || 0)
+      })).filter((r) => r.date && r.platform && !Number.isNaN(r.ad_spend));
     }
 
     function uniquePlatforms() {
-      return [...new Set([...KNOWN_PLATFORMS, ...salesRows, ...adRows].map((r) => typeof r === 'string' ? r : r.platform))].sort();
+      return [...new Set([...salesRows, ...adRows].map((r) => r.platform))].sort();
     }
 
     function fillPlatformFilter() {
@@ -392,18 +319,20 @@
       });
     }
 
-    function dateToIso(date) { return date.toISOString().slice(0, 10); }
+    function dateToIso(date) {
+      return date.toISOString().slice(0, 10);
+    }
 
     function getDateBounds() {
-      const allDates = [...salesRows, ...adRows]
-        .map((r) => new Date(r.date + 'T00:00:00'))
-        .filter((d) => !Number.isNaN(d.getTime()));
-
+      const allDates = [...salesRows, ...adRows].map((r) => new Date(r.date + 'T00:00:00'));
       if (!allDates.length) {
         const today = new Date();
         return { min: today, max: today };
       }
-      return { min: new Date(Math.min(...allDates)), max: new Date(Math.max(...allDates)) };
+      return {
+        min: new Date(Math.min(...allDates)),
+        max: new Date(Math.max(...allDates))
+      };
     }
 
     function applyPresetDates() {
@@ -422,7 +351,8 @@
     }
 
     function selectedPlatforms() {
-      return [...document.getElementById('platformFilter').selectedOptions].map((o) => o.value);
+      const sel = document.getElementById('platformFilter');
+      return [...sel.selectedOptions].map((o) => o.value);
     }
 
     function aggregateByDateAndPlatform(rows, valueKey, platforms, startDate, endDate) {
@@ -437,14 +367,9 @@
     }
 
     function generateDateList(startIso, endIso) {
-      const start = new Date(startIso + 'T00:00:00');
-      const end = new Date(endIso + 'T00:00:00');
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
-        throw new Error('Date range is invalid.\nFix: choose a valid start/end date, or use a preset like Last 30 days.');
-      }
-
       const list = [];
-      const d = new Date(start);
+      let d = new Date(startIso + 'T00:00:00');
+      const end = new Date(endIso + 'T00:00:00');
       while (d <= end) {
         list.push(dateToIso(d));
         d.setDate(d.getDate() + 1);
@@ -459,13 +384,15 @@
       const h = chart.height - pad.t - pad.b;
 
       const values = [];
-      platforms.forEach((p) => dates.forEach((d) => {
-        values.push(revenueMap.get(`${d}__${p}`) || 0);
-        values.push(adMap.get(`${d}__${p}`) || 0);
-      }));
+      platforms.forEach((p) => {
+        dates.forEach((d) => {
+          values.push(revenueMap.get(`${d}__${p}`) || 0);
+          values.push(adMap.get(`${d}__${p}`) || 0);
+        });
+      });
       const maxY = Math.max(10, ...values) * 1.2;
 
-      ctx.strokeStyle = '#3b3b3b';
+      ctx.strokeStyle = '#d9e0ec';
       ctx.lineWidth = 1;
       for (let i = 0; i <= 4; i++) {
         const y = pad.t + (h * i / 4);
@@ -475,15 +402,15 @@
         ctx.stroke();
 
         const val = (maxY * (1 - i / 4));
-        ctx.fillStyle = '#c3c3c3';
+        ctx.fillStyle = '#667085';
         ctx.font = '12px sans-serif';
-        ctx.fillText(`£${val.toFixed(0)}`, 8, y + 4);
+        ctx.fillText(`$${val.toFixed(0)}`, 8, y + 4);
       }
 
       dates.forEach((d, idx) => {
         if (dates.length <= 1) return;
         const x = pad.l + (idx / (dates.length - 1)) * w;
-        ctx.fillStyle = '#c3c3c3';
+        ctx.fillStyle = '#667085';
         ctx.font = '11px sans-serif';
         if (idx % Math.ceil(dates.length / 8) === 0 || idx === dates.length - 1) {
           ctx.fillText(d.slice(5), x - 15, chart.height - 14);
@@ -520,7 +447,7 @@
     }
 
     function formatMoney(n) {
-      return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
     }
 
     function renderDashboard() {
@@ -564,70 +491,40 @@
     }
 
     async function loadSalesData() {
-      setError('salesError', '');
+      document.getElementById('salesError').textContent = '';
       try {
-        const csv = await loadCsvFromSource('salesSourceType', 'salesCsv', 'salesSheetUrl');
-        const headerError = validateHeaders(csv.headers, ['date', 'order_number', 'platform', 'item_revenue', 'shipping_revenue', 'total_revenue']);
-        if (headerError) throw new Error(headerError);
-
-        const result = normalizeSales(csv.rows);
-        salesRows = result.normalized;
-        if (!salesRows.length) {
-          throw new Error('No valid sales rows found.\nFix: ensure date is parseable and total_revenue is numeric.\nAccepted date formats: YYYY-MM-DD or MM/DD/YYYY.');
-        }
-        if (result.badRows.length) {
-          setError('salesError', `Loaded with warnings. Ignored sales row(s): ${result.badRows.slice(0, 10).join(', ')}${result.badRows.length > 10 ? ', ...' : ''}.\nFix those rows to include a valid date/platform/total_revenue.`);
-        }
-
+        const rows = await loadCsvFromSource('salesSourceType', 'salesCsv', 'salesSheetUrl');
+        salesRows = normalizeSales(rows);
+        if (!salesRows.length) throw new Error('No valid sales rows found.');
         fillPlatformFilter();
         applyPresetDates();
         renderDashboard();
       } catch (err) {
-        setError('salesError', err.message);
+        document.getElementById('salesError').textContent = err.message;
       }
     }
 
     async function loadAdSpendData() {
-      setError('adError', '');
+      document.getElementById('adError').textContent = '';
       try {
-        const csv = await loadCsvFromSource('adSourceType', 'adCsv', 'adSheetUrl');
-        const headerError = validateHeaders(csv.headers, ['date', 'platform', 'channel', 'ad_spend']);
-        if (headerError) throw new Error(headerError);
-
-        const result = normalizeAdSpend(csv.rows);
-        adRows = result.normalized;
-        if (!adRows.length) {
-          throw new Error('No valid ad spend rows found.\nFix: ensure date is parseable and ad_spend is numeric.\nAccepted date formats: YYYY-MM-DD or MM/DD/YYYY.');
-        }
-        if (result.badRows.length) {
-          setError('adError', `Loaded with warnings. Ignored ad spend row(s): ${result.badRows.slice(0, 10).join(', ')}${result.badRows.length > 10 ? ', ...' : ''}.\nFix those rows to include a valid date/platform/ad_spend.`);
-        }
-
+        const rows = await loadCsvFromSource('adSourceType', 'adCsv', 'adSheetUrl');
+        adRows = normalizeAdSpend(rows);
+        if (!adRows.length) throw new Error('No valid ad spend rows found.');
         fillPlatformFilter();
         applyPresetDates();
         renderDashboard();
       } catch (err) {
-        setError('adError', err.message);
+        document.getElementById('adError').textContent = err.message;
       }
     }
 
     document.getElementById('salesSourceType').addEventListener('change', () => toggleSourceSections('salesSourceType', 'salesPasteSection', 'salesGoogleSection'));
     document.getElementById('adSourceType').addEventListener('change', () => toggleSourceSections('adSourceType', 'adPasteSection', 'adGoogleSection'));
     document.getElementById('datePreset').addEventListener('change', () => {
-      try {
-        applyPresetDates();
-        renderDashboard();
-      } catch (err) {
-        setError('salesError', err.message);
-      }
+      applyPresetDates();
+      renderDashboard();
     });
-    document.getElementById('applyFilters').addEventListener('click', () => {
-      try {
-        renderDashboard();
-      } catch (err) {
-        setError('salesError', err.message);
-      }
-    });
+    document.getElementById('applyFilters').addEventListener('click', renderDashboard);
     document.getElementById('loadSales').addEventListener('click', loadSalesData);
     document.getElementById('loadAdSpend').addEventListener('click', loadAdSpendData);
 
