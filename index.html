@@ -3,358 +3,532 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Velocity + CLV Tracker (Demo)</title>
+  <title>E-commerce Sales + Ad Spend Dashboard</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --muted: #94a3b8;
-      --text: #e2e8f0;
-      --good: #22c55e;
-      --bad: #ef4444;
-      --warn: #f59e0b;
-      --line: #334155;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d8deea;
+      --text: #111827;
+      --muted: #667085;
+      --accent: #2563eb;
+      --accent-2: #0f766e;
+      --danger: #b91c1c;
     }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%);
-      min-height: 100vh;
+      background: var(--bg);
     }
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 24px;
     }
-    h1 { margin-top: 0; }
-    .sub { color: var(--muted); margin-top: -8px; }
+    h1 { margin: 0; }
+    .sub { color: var(--muted); margin-top: 8px; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 16px;
       margin-top: 16px;
     }
     .card {
-      background: rgba(17, 24, 39, 0.9);
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 16px;
+      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
     }
-    table {
+    .full { grid-column: 1 / -1; }
+    h3 { margin-top: 0; margin-bottom: 8px; }
+    label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    input, select, textarea, button {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    th, td {
-      text-align: left;
-      border-bottom: 1px solid var(--line);
-      padding: 8px 6px;
-    }
-    .pill {
-      display: inline-block;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 3px 10px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-right: 6px;
-    }
-    .alert {
-      border-left: 4px solid var(--warn);
-      background: rgba(245, 158, 11, 0.1);
+      margin-top: 6px;
+      margin-bottom: 10px;
       padding: 10px 12px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-    }
-    .good { color: var(--good); font-weight: 600; }
-    .bad { color: var(--bad); font-weight: 600; }
-    input, select, button {
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      background: #0b1220;
-      color: var(--text);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 10px;
       font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
     }
     button {
-      background: #1d4ed8;
-      border-color: #1e40af;
-      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
       font-weight: 600;
+      cursor: pointer;
+      border-color: #1d4ed8;
     }
-    .small {
-      color: var(--muted);
+    button.secondary {
+      background: #fff;
+      color: var(--accent);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .tiny { font-size: 12px; color: var(--muted); }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
       font-size: 12px;
-      margin-top: 4px;
+      color: var(--muted);
+      background: #fff;
     }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafcff;
+    }
+    .metric .k { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .metric .v { font-size: 20px; font-weight: 700; }
+    .chart-wrap {
+      height: 390px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      margin-top: 10px;
+    }
+    canvas { width: 100%; height: 100%; }
+    .warn {
+      border-left: 4px solid #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .error { color: var(--danger); font-size: 12px; margin-top: -2px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Velocity + CLV Tracker (Mock Demo)</h1>
-    <p class="sub">No Betfair API. Simulated soccer prices, velocity alerts, and manual CLV entry in browser memory.</p>
-
-    <div class="card">
-      <span class="pill" id="simTimePill">Sim time: 00:00</span>
-      <span class="pill">1 sim minute = 2 real seconds</span>
-      <span class="pill">Price update every 2 sec</span>
-      <div class="small">Velocity trigger: <strong>3%+ drop over 5 simulated minutes</strong>.</div>
-    </div>
+    <h1>E-commerce Sales + Ad Spend Dashboard</h1>
+    <p class="sub">Paste daily sales/ad spend rows or connect to a Google Sheet CSV. Filter dates and compare marketplaces on one chart.</p>
 
     <div class="grid">
       <div class="card">
-        <h3>Mock Soccer Markets</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Market</th>
-              <th>Current Back</th>
-              <th>5m Drop</th>
-            </tr>
-          </thead>
-          <tbody id="marketBody"></tbody>
-        </table>
+        <h3>Sales data feed</h3>
+        <label for="salesSourceType">Source</label>
+        <select id="salesSourceType">
+          <option value="paste">Manual paste (CSV)</option>
+          <option value="google">Google Sheets CSV URL</option>
+        </select>
+
+        <div id="salesPasteSection">
+          <label for="salesCsv">Sales CSV rows</label>
+          <textarea id="salesCsv" placeholder="date,order_number,platform,item_revenue,shipping_revenue,total_revenue\n2026-03-10,1001,Amazon,87.2,7.8,95"></textarea>
+        </div>
+
+        <div id="salesGoogleSection" style="display:none;">
+          <label for="salesSheetUrl">Google Sheets publish-to-web CSV URL</label>
+          <input id="salesSheetUrl" placeholder="https://docs.google.com/...output=csv" />
+        </div>
+
+        <button id="loadSales">Load sales data</button>
+        <div class="tiny">Required columns: <strong>date, order_number, platform, item_revenue, shipping_revenue, total_revenue</strong>.</div>
+        <div id="salesError" class="error"></div>
       </div>
 
       <div class="card">
-        <h3>Manual Bet Entry (for CLV)</h3>
-        <label for="marketSelect">Market</label>
-        <select id="marketSelect"></select>
+        <h3>Ad spend data feed</h3>
+        <label for="adSourceType">Source</label>
+        <select id="adSourceType">
+          <option value="paste">Manual paste (CSV)</option>
+          <option value="google">Google Sheets CSV URL</option>
+        </select>
 
-        <label for="takenOdds">Bookmaker odds taken</label>
-        <input id="takenOdds" type="number" step="0.01" min="1.01" placeholder="e.g. 2.35" />
+        <div id="adPasteSection">
+          <label for="adCsv">Ad spend CSV rows</label>
+          <textarea id="adCsv" placeholder="date,platform,channel,ad_spend\n2026-03-10,Amazon,Google Ads,42.5"></textarea>
+        </div>
 
-        <label for="stake">Stake (optional)</label>
-        <input id="stake" type="number" step="0.01" min="0" placeholder="e.g. 50" />
+        <div id="adGoogleSection" style="display:none;">
+          <label for="adSheetUrl">Google Sheets publish-to-web CSV URL</label>
+          <input id="adSheetUrl" placeholder="https://docs.google.com/...output=csv" />
+        </div>
 
-        <button id="saveBet">Save Bet Snapshot</button>
-        <div class="small">CLV = ((Taken Odds / Sim Closing Odds) - 1) × 100.</div>
+        <button id="loadAdSpend">Load ad spend data</button>
+        <div class="tiny">Required columns: <strong>date, platform, channel, ad_spend</strong>.</div>
+        <div id="adError" class="error"></div>
       </div>
-    </div>
 
-    <div class="grid">
-      <div class="card">
-        <h3>Velocity Alerts</h3>
-        <div id="alertBox"></div>
-      </div>
+      <div class="card full">
+        <h3>Filters + comparison</h3>
+        <div class="row">
+          <div>
+            <label for="datePreset">Date preset</label>
+            <select id="datePreset">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="custom">Custom range</option>
+            </select>
+          </div>
+          <div>
+            <label for="platformFilter">Platforms (multi-select)</label>
+            <select id="platformFilter" multiple size="4"></select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="startDate">Start date</label>
+            <input id="startDate" type="date" />
+          </div>
+          <div>
+            <label for="endDate">End date</label>
+            <input id="endDate" type="date" />
+          </div>
+        </div>
+        <button id="applyFilters" class="secondary">Apply filters</button>
 
-      <div class="card">
-        <h3>Saved Bets + CLV</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Market</th>
-              <th>Taken</th>
-              <th>Sim Close</th>
-              <th>CLV %</th>
-            </tr>
-          </thead>
-          <tbody id="betsBody"></tbody>
-        </table>
+        <div class="pills" id="summaryPills"></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="k">Total Sales Revenue</div><div class="v" id="mSales">$0.00</div></div>
+          <div class="metric"><div class="k">Total Ad Spend</div><div class="v" id="mSpend">$0.00</div></div>
+          <div class="metric"><div class="k">ROAS (Revenue / Spend)</div><div class="v" id="mRoas">0.00x</div></div>
+          <div class="metric"><div class="k">Orders</div><div class="v" id="mOrders">0</div></div>
+        </div>
+
+        <div class="chart-wrap"><canvas id="chart" width="1150" height="370"></canvas></div>
+        <div class="warn">The chart overlays revenue by platform and ad spend totals by platform across the selected period.</div>
       </div>
     </div>
   </div>
 
   <script>
-    const SIM_MINUTE_MS = 2000;
-    const DROP_WINDOW_MINUTES = 5;
-    const DROP_THRESHOLD = 3;
+    const sampleSalesCsv = `date,order_number,platform,item_revenue,shipping_revenue,total_revenue
+2026-02-25,10001,Amazon,75,6,81
+2026-02-26,10002,Shopify,125,8,133
+2026-02-26,10003,Amazon,44,5,49
+2026-02-27,10004,eBay,62,6,68
+2026-03-01,10005,Shopify,95,7,102
+2026-03-02,10006,Amazon,105,9,114
+2026-03-03,10007,eBay,38,4,42
+2026-03-04,10008,Shopify,142,10,152
+2026-03-06,10009,Amazon,115,8,123
+2026-03-07,10010,eBay,89,6,95
+2026-03-09,10011,Shopify,180,12,192
+2026-03-10,10012,Amazon,94,7,101`;
 
-    const markets = [
-      { id: 'm1', name: 'Man City vs Arsenal - Home', price: 2.12 },
-      { id: 'm2', name: 'Inter vs Milan - Over 2.5', price: 1.94 },
-      { id: 'm3', name: 'PSG vs Marseille - Away', price: 3.2 }
-    ].map((m) => ({
-      ...m,
-      history: [{ simMinute: 0, price: m.price }],
-      lastAlertedAt: null
-    }));
+    const sampleAdCsv = `date,platform,channel,ad_spend
+2026-02-25,Amazon,Google Ads,24
+2026-02-26,Shopify,Meta Ads,38
+2026-02-26,Amazon,Google Ads,16
+2026-02-27,eBay,Meta Ads,19
+2026-03-01,Shopify,TikTok Ads,42
+2026-03-02,Amazon,Google Ads,31
+2026-03-03,eBay,Meta Ads,18
+2026-03-04,Shopify,Google Ads,49
+2026-03-06,Amazon,Meta Ads,33
+2026-03-07,eBay,TikTok Ads,23
+2026-03-09,Shopify,Meta Ads,54
+2026-03-10,Amazon,Google Ads,29`;
 
-    const alerts = [];
-    const bets = [];
-    let simMinute = 0;
+    const chart = document.getElementById('chart');
+    const ctx = chart.getContext('2d');
+    const colors = ['#2563eb', '#7c3aed', '#0f766e', '#e11d48', '#ea580c', '#0891b2'];
 
-    const marketBody = document.getElementById('marketBody');
-    const alertBox = document.getElementById('alertBox');
-    const betsBody = document.getElementById('betsBody');
-    const simTimePill = document.getElementById('simTimePill');
-    const marketSelect = document.getElementById('marketSelect');
+    let salesRows = [];
+    let adRows = [];
 
-    function pad2(n) {
-      return n.toString().padStart(2, '0');
+    document.getElementById('salesCsv').value = sampleSalesCsv;
+    document.getElementById('adCsv').value = sampleAdCsv;
+
+    function parseCsv(text) {
+      const lines = text.trim().split('\n').map((line) => line.trim()).filter(Boolean);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+      return lines.slice(1).map((line) => {
+        const values = line.split(',').map((v) => v.trim());
+        return headers.reduce((obj, key, idx) => {
+          obj[key] = values[idx] ?? '';
+          return obj;
+        }, {});
+      });
     }
 
-    function formatSimTime(minute) {
-      const hh = Math.floor(minute / 60);
-      const mm = minute % 60;
-      return `${pad2(hh)}:${pad2(mm)}`;
+    async function loadCsvFromSource(typeEl, pasteEl, urlEl) {
+      const sourceType = document.getElementById(typeEl).value;
+      if (sourceType === 'paste') return parseCsv(document.getElementById(pasteEl).value);
+
+      const url = document.getElementById(urlEl).value.trim();
+      if (!url) throw new Error('Google Sheets URL is empty.');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Unable to fetch Google Sheet CSV. Ensure the sheet is published.');
+      const txt = await res.text();
+      return parseCsv(txt);
     }
 
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
+    function normalizeSales(rows) {
+      return rows.map((r) => ({
+        date: r.date,
+        order_number: r.order_number,
+        platform: r.platform,
+        item_revenue: Number(r.item_revenue || 0),
+        shipping_revenue: Number(r.shipping_revenue || 0),
+        total_revenue: Number(r.total_revenue || 0)
+      })).filter((r) => r.date && r.platform && !Number.isNaN(r.total_revenue));
     }
 
-    function randomDrift() {
-      return (Math.random() * 0.03) - 0.015;
+    function normalizeAdSpend(rows) {
+      return rows.map((r) => ({
+        date: r.date,
+        platform: r.platform,
+        channel: r.channel,
+        ad_spend: Number(r.ad_spend || 0)
+      })).filter((r) => r.date && r.platform && !Number.isNaN(r.ad_spend));
     }
 
-    function randomShock() {
-      return Math.random() < 0.2 ? -(0.025 + Math.random() * 0.03) : 0;
+    function uniquePlatforms() {
+      return [...new Set([...salesRows, ...adRows].map((r) => r.platform))].sort();
     }
 
-    function currentPrice(id) {
-      const m = markets.find((x) => x.id === id);
-      return m ? m.price : null;
+    function fillPlatformFilter() {
+      const sel = document.getElementById('platformFilter');
+      const existing = new Set([...sel.selectedOptions].map((o) => o.value));
+      sel.innerHTML = '';
+      uniquePlatforms().forEach((p) => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        opt.selected = existing.size ? existing.has(p) : true;
+        sel.appendChild(opt);
+      });
     }
 
-    function getDropStats(market) {
-      const startMinute = simMinute - DROP_WINDOW_MINUTES;
-      const windowStart = [...market.history].reverse().find((p) => p.simMinute <= startMinute);
-      if (!windowStart) return null;
+    function dateToIso(date) {
+      return date.toISOString().slice(0, 10);
+    }
 
-      const dropPct = ((windowStart.price - market.price) / windowStart.price) * 100;
+    function getDateBounds() {
+      const allDates = [...salesRows, ...adRows].map((r) => new Date(r.date + 'T00:00:00'));
+      if (!allDates.length) {
+        const today = new Date();
+        return { min: today, max: today };
+      }
       return {
-        from: windowStart.price,
-        to: market.price,
-        dropPct
+        min: new Date(Math.min(...allDates)),
+        max: new Date(Math.max(...allDates))
       };
     }
 
-    function maybeAlert(market, stats) {
-      if (!stats || stats.dropPct < DROP_THRESHOLD) return;
-      if (market.lastAlertedAt !== null && simMinute - market.lastAlertedAt < DROP_WINDOW_MINUTES) return;
+    function applyPresetDates() {
+      const preset = document.getElementById('datePreset').value;
+      const startEl = document.getElementById('startDate');
+      const endEl = document.getElementById('endDate');
+      const bounds = getDateBounds();
+      const end = bounds.max;
 
-      market.lastAlertedAt = simMinute;
-      const message = `${market.name}: ${stats.dropPct.toFixed(2)}% drop in 5m (from ${stats.from.toFixed(2)} to ${stats.to.toFixed(2)}).`;
-      alerts.unshift({ simMinute, message });
-      if (alerts.length > 12) alerts.pop();
+      if (preset === 'custom') return;
+      const days = Number(preset);
+      const start = new Date(end);
+      start.setDate(end.getDate() - (days - 1));
+      startEl.value = dateToIso(start < bounds.min ? bounds.min : start);
+      endEl.value = dateToIso(end);
+    }
 
-      if (typeof window !== 'undefined' && window.alert) {
-        window.alert(`Velocity alert\n${message}`);
+    function selectedPlatforms() {
+      const sel = document.getElementById('platformFilter');
+      return [...sel.selectedOptions].map((o) => o.value);
+    }
+
+    function aggregateByDateAndPlatform(rows, valueKey, platforms, startDate, endDate) {
+      const out = new Map();
+      rows.forEach((r) => {
+        if (!platforms.includes(r.platform)) return;
+        if (r.date < startDate || r.date > endDate) return;
+        const k = `${r.date}__${r.platform}`;
+        out.set(k, (out.get(k) || 0) + r[valueKey]);
+      });
+      return out;
+    }
+
+    function generateDateList(startIso, endIso) {
+      const list = [];
+      let d = new Date(startIso + 'T00:00:00');
+      const end = new Date(endIso + 'T00:00:00');
+      while (d <= end) {
+        list.push(dateToIso(d));
+        d.setDate(d.getDate() + 1);
+      }
+      return list;
+    }
+
+    function drawChart(dates, platforms, revenueMap, adMap) {
+      ctx.clearRect(0, 0, chart.width, chart.height);
+      const pad = { l: 56, r: 18, t: 18, b: 44 };
+      const w = chart.width - pad.l - pad.r;
+      const h = chart.height - pad.t - pad.b;
+
+      const values = [];
+      platforms.forEach((p) => {
+        dates.forEach((d) => {
+          values.push(revenueMap.get(`${d}__${p}`) || 0);
+          values.push(adMap.get(`${d}__${p}`) || 0);
+        });
+      });
+      const maxY = Math.max(10, ...values) * 1.2;
+
+      ctx.strokeStyle = '#d9e0ec';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.t + (h * i / 4);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(pad.l + w, y);
+        ctx.stroke();
+
+        const val = (maxY * (1 - i / 4));
+        ctx.fillStyle = '#667085';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`$${val.toFixed(0)}`, 8, y + 4);
+      }
+
+      dates.forEach((d, idx) => {
+        if (dates.length <= 1) return;
+        const x = pad.l + (idx / (dates.length - 1)) * w;
+        ctx.fillStyle = '#667085';
+        ctx.font = '11px sans-serif';
+        if (idx % Math.ceil(dates.length / 8) === 0 || idx === dates.length - 1) {
+          ctx.fillText(d.slice(5), x - 15, chart.height - 14);
+        }
+      });
+
+      platforms.forEach((p, i) => {
+        const color = colors[i % colors.length];
+
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        dates.forEach((d, idx) => {
+          const x = dates.length > 1 ? pad.l + (idx / (dates.length - 1)) * w : pad.l;
+          const yVal = revenueMap.get(`${d}__${p}`) || 0;
+          const y = pad.t + (1 - yVal / maxY) * h;
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        dates.forEach((d, idx) => {
+          const x = dates.length > 1 ? pad.l + (idx / (dates.length - 1)) * w : pad.l;
+          const yVal = adMap.get(`${d}__${p}`) || 0;
+          const y = pad.t + (1 - yVal / maxY) * h;
+          if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+    }
+
+    function formatMoney(n) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+    }
+
+    function renderDashboard() {
+      const platforms = selectedPlatforms();
+      if (!platforms.length) return;
+
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const dates = generateDateList(start, end);
+      const revMap = aggregateByDateAndPlatform(salesRows, 'total_revenue', platforms, start, end);
+      const spendMap = aggregateByDateAndPlatform(adRows, 'ad_spend', platforms, start, end);
+
+      drawChart(dates, platforms, revMap, spendMap);
+
+      const totalSales = [...revMap.values()].reduce((a, b) => a + b, 0);
+      const totalSpend = [...spendMap.values()].reduce((a, b) => a + b, 0);
+      const filteredOrders = salesRows.filter((r) => platforms.includes(r.platform) && r.date >= start && r.date <= end).length;
+      document.getElementById('mSales').textContent = formatMoney(totalSales);
+      document.getElementById('mSpend').textContent = formatMoney(totalSpend);
+      document.getElementById('mRoas').textContent = totalSpend > 0 ? `${(totalSales / totalSpend).toFixed(2)}x` : '—';
+      document.getElementById('mOrders').textContent = String(filteredOrders);
+
+      const pills = document.getElementById('summaryPills');
+      pills.innerHTML = '';
+      platforms.forEach((p) => {
+        const el = document.createElement('span');
+        el.className = 'pill';
+        el.textContent = p;
+        pills.appendChild(el);
+      });
+      const meta = document.createElement('span');
+      meta.className = 'pill';
+      meta.textContent = `${start} → ${end}`;
+      pills.appendChild(meta);
+    }
+
+    function toggleSourceSections(selectId, pasteSectionId, googleSectionId) {
+      const isGoogle = document.getElementById(selectId).value === 'google';
+      document.getElementById(pasteSectionId).style.display = isGoogle ? 'none' : 'block';
+      document.getElementById(googleSectionId).style.display = isGoogle ? 'block' : 'none';
+    }
+
+    async function loadSalesData() {
+      document.getElementById('salesError').textContent = '';
+      try {
+        const rows = await loadCsvFromSource('salesSourceType', 'salesCsv', 'salesSheetUrl');
+        salesRows = normalizeSales(rows);
+        if (!salesRows.length) throw new Error('No valid sales rows found.');
+        fillPlatformFilter();
+        applyPresetDates();
+        renderDashboard();
+      } catch (err) {
+        document.getElementById('salesError').textContent = err.message;
       }
     }
 
-    function tick() {
-      simMinute += 1;
-      simTimePill.textContent = `Sim time: ${formatSimTime(simMinute)}`;
-
-      markets.forEach((market) => {
-        const change = randomDrift() + randomShock();
-        market.price = clamp(market.price * (1 + change), 1.01, 10);
-        market.history.push({ simMinute, price: market.price });
-        if (market.history.length > 120) market.history.shift();
-
-        const stats = getDropStats(market);
-        maybeAlert(market, stats);
-      });
-
-      render();
-    }
-
-    function renderMarkets() {
-      marketBody.innerHTML = '';
-      markets.forEach((m) => {
-        const stats = getDropStats(m);
-        const tr = document.createElement('tr');
-        const dropText = !stats ? '-' : `${stats.dropPct.toFixed(2)}%`;
-        const dropClass = stats && stats.dropPct >= DROP_THRESHOLD ? 'bad' : '';
-        tr.innerHTML = `
-          <td>${m.name}</td>
-          <td>${m.price.toFixed(2)}</td>
-          <td class="${dropClass}">${dropText}</td>
-        `;
-        marketBody.appendChild(tr);
-      });
-    }
-
-    function renderAlerts() {
-      alertBox.innerHTML = '';
-      if (!alerts.length) {
-        alertBox.innerHTML = '<div class="small">No alerts yet.</div>';
-        return;
-      }
-
-      alerts.forEach((a) => {
-        const div = document.createElement('div');
-        div.className = 'alert';
-        div.textContent = `[${formatSimTime(a.simMinute)}] ${a.message}`;
-        alertBox.appendChild(div);
-      });
-    }
-
-    function renderBets() {
-      betsBody.innerHTML = '';
-      bets.forEach((b) => {
-        const closing = currentPrice(b.marketId);
-        const clvPct = closing ? ((b.takenOdds / closing) - 1) * 100 : 0;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${formatSimTime(b.simMinute)}</td>
-          <td>${b.marketName}</td>
-          <td>${b.takenOdds.toFixed(2)}</td>
-          <td>${closing ? closing.toFixed(2) : '-'}</td>
-          <td class="${clvPct >= 0 ? 'good' : 'bad'}">${clvPct.toFixed(2)}%</td>
-        `;
-        betsBody.appendChild(tr);
-      });
-
-      if (!bets.length) {
-        betsBody.innerHTML = '<tr><td colspan="5" class="small">No bets saved yet.</td></tr>';
+    async function loadAdSpendData() {
+      document.getElementById('adError').textContent = '';
+      try {
+        const rows = await loadCsvFromSource('adSourceType', 'adCsv', 'adSheetUrl');
+        adRows = normalizeAdSpend(rows);
+        if (!adRows.length) throw new Error('No valid ad spend rows found.');
+        fillPlatformFilter();
+        applyPresetDates();
+        renderDashboard();
+      } catch (err) {
+        document.getElementById('adError').textContent = err.message;
       }
     }
 
-    function renderMarketSelect() {
-      marketSelect.innerHTML = '';
-      markets.forEach((m) => {
-        const option = document.createElement('option');
-        option.value = m.id;
-        option.textContent = m.name;
-        marketSelect.appendChild(option);
-      });
-    }
-
-    function render() {
-      renderMarkets();
-      renderAlerts();
-      renderBets();
-    }
-
-    document.getElementById('saveBet').addEventListener('click', () => {
-      const marketId = marketSelect.value;
-      const takenOdds = parseFloat(document.getElementById('takenOdds').value);
-      const stake = parseFloat(document.getElementById('stake').value || '0');
-
-      if (!marketId || Number.isNaN(takenOdds) || takenOdds < 1.01) {
-        window.alert('Enter valid bookmaker odds (>= 1.01).');
-        return;
-      }
-
-      const market = markets.find((m) => m.id === marketId);
-      bets.unshift({
-        simMinute,
-        marketId,
-        marketName: market.name,
-        takenOdds,
-        stake
-      });
-      if (bets.length > 40) bets.pop();
-
-      document.getElementById('takenOdds').value = '';
-      document.getElementById('stake').value = '';
-      renderBets();
+    document.getElementById('salesSourceType').addEventListener('change', () => toggleSourceSections('salesSourceType', 'salesPasteSection', 'salesGoogleSection'));
+    document.getElementById('adSourceType').addEventListener('change', () => toggleSourceSections('adSourceType', 'adPasteSection', 'adGoogleSection'));
+    document.getElementById('datePreset').addEventListener('change', () => {
+      applyPresetDates();
+      renderDashboard();
     });
+    document.getElementById('applyFilters').addEventListener('click', renderDashboard);
+    document.getElementById('loadSales').addEventListener('click', loadSalesData);
+    document.getElementById('loadAdSpend').addEventListener('click', loadAdSpendData);
 
-    renderMarketSelect();
-    render();
-    setInterval(tick, SIM_MINUTE_MS);
+    Promise.all([loadSalesData(), loadAdSpendData()]);
   </script>
 </body>
 </html>
